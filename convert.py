@@ -1,19 +1,19 @@
-import json
-import sys
-from datetime import datetime, timedelta
+from flask import Flask, request, jsonify
+from datetime import datetime
 
-def convert_unix_to_gmt_530(unix_timestamp):
-    # Convert Unix timestamp to datetime
-    timestamp = datetime.utcfromtimestamp(unix_timestamp)
-    # Add 5 hours and 30 minutes to convert to GMT+5:30
-    gmt_530_time = timestamp + timedelta(hours=5, minutes=30)
-    return gmt_530_time.strftime('%Y-%m-%d %H:%M:%S')
+app = Flask(__name__)
 
-# Read the Unix timestamp from the command line arguments
-input_timestamp = int(sys.argv[1])
+@app.route('/convert_timestamp', methods=['GET'])
+def convert_timestamp():
+    try:
+        timestamp = int(request.args.get('timestamp'))
+        # If the timestamp is in milliseconds, divide by 1000
+        # Example: timestamp /= 1000
 
-# Perform the conversion
-converted_time = convert_unix_to_gmt_530(input_timestamp)
+        formatted_date = datetime.utcfromtimestamp(timestamp).strftime('%a %d %b %Y, %H:%M:%S GMT+0530')
+        return jsonify({'formatted_date': formatted_date})
+    except ValueError:
+        return jsonify({'error': 'Invalid timestamp format'}), 400
 
-# Output the result as JSON
-print(json.dumps({"converted_time": converted_time}))
+if __name__ == '__main__':
+    app.run(debug=True)
